@@ -4,7 +4,8 @@ module BasicLatex (
   switchCmd,    
   eol,
   textLine,
-  inlineSpacing,    
+  inlineSpacing,
+  blanksEOL,    
 ) where
 
 import Text.Parsec.String (Parser)
@@ -34,14 +35,21 @@ nl = do
         newline
         return ()
 
-eol :: Parser ()
-eol = do
-         many (eolComment <|> nl)
-         return ()
 
 inlineSpacing :: Parser ()
 inlineSpacing = skipMany $ oneOf [' ', '\t']
 
+blanksEOL :: Parser ()
+blanksEOL = do
+              inlineSpacing
+              eolComment <|> nl
+              return ()
+
+eol :: Parser ()
+eol = do
+         many (eolComment <|> nl <|> blanksEOL)
+         return ()
+         
 namedParam :: Parser String
 namedParam = many letter
 
