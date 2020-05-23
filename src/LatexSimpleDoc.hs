@@ -9,7 +9,7 @@ Hello world
 \end{document}
 -- EOF--
 
-Possible eol-comments are stripped at BasicLatex
+Possible eol-comments are stripped at BasicLatex eol
 -}
 
 module LatexSimpleDoc (
@@ -17,7 +17,7 @@ module LatexSimpleDoc (
   )    
     where
         
-import BasicLatex (textLine, comment)
+import BasicLatex (textLine, eol)
 import LatexCmds (docClass, beginCtx, endCtx)
 
 import "parsec" Text.Parsec.String (Parser)
@@ -37,9 +37,9 @@ latexDocCtx :: Parser [PD.Block]
 latexDocCtx = do
                 -- beginCtx pushes ctx into ctxStack as Vec
                 (_optParams, ctxStack) <- beginCtx "document" Vec.empty 
-                P.newline
+                eol
                 txt <- textLine
-                P.newline
+                eol
                 _ <- endCtx ctxStack   -- pops ctx from ctxStack
                 return $ [PD.Para [PD.Str txt]]
     
@@ -48,10 +48,8 @@ latexSimple :: Parser Pandoc
 latexSimple = do
                 P.spaces
                 docClass
-                P.newline
-                P.optional comment
-                P.spaces
+                eol
                 blocks <- latexDocCtx
-                P.optional P.spaces
+                P.optional P.newline
                 return $ Pandoc PD.nullMeta blocks
   

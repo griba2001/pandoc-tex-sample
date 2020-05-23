@@ -1,0 +1,10 @@
+eol = { eolComment nl | nl }
+
+latexSimple ::= cmdDocClass eol ctxDocument [nl]
+
+ctxDocument ::= cmdBeginDoc eol docContent eol cmdEndDoc
+
+docContent ::= text
+
+
+               

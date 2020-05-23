@@ -2,7 +2,7 @@ module BasicLatex (
   cmdWithParams,
   cmdWithNoParams,
   switchCmd,    
-  comment,
+  eol,
   textLine,
   inlineSpacing,    
 ) where
@@ -10,7 +10,7 @@ module BasicLatex (
 import Text.Parsec.String (Parser)
 import Text.Parsec.Char (char, oneOf, noneOf, spaces, string, letter, alphaNum, newline, satisfy)
 import Text.Parsec.Combinator (many1, sepBy1, option, optional)
-import Text.Parsec.Prim (many, skipMany, (<?>))
+import Text.Parsec.Prim (many, skipMany, (<?>), (<|>))
 
 import Data.List (intercalate)
 
@@ -22,6 +22,23 @@ nonNL :: Char -> Bool
 nonNL '\n' = False
 nonNL _ = True
 
+eolComment :: Parser ()
+eolComment = do
+            char '%'
+            skipMany (satisfy nonNL)
+            newline
+            return ()
+            
+nl :: Parser ()
+nl = do
+        newline
+        return ()
+
+eol :: Parser ()
+eol = do
+         many (eolComment <|> nl)
+         return ()
+
 inlineSpacing :: Parser ()
 inlineSpacing = skipMany $ oneOf [' ', '\t']
 
@@ -30,12 +47,6 @@ namedParam = many letter
 
 alnumParam :: Parser String
 alnumParam = fmap (intercalate " ") $ sepBy1 (many alphaNum) spaces 
-
-comment :: Parser ()
-comment = do
-            char '%'
-            skipMany (satisfy nonNL)
-            return ()
 
 mandatParams :: Parser [String]
 mandatParams = do
@@ -57,14 +68,12 @@ cmdWithParams cmd = do
             string cmd
             optPs <- option [] optParams
             params <- mandatParams <?> "missing mandatory {param}"
-            optional comment
             return (optPs, params)
 
 cmdWithNoParams :: String -> Parser ()           
 cmdWithNoParams cmd = do
             bkslash
             string cmd
-            optional comment
             return ()
 
 switchCmd :: Parser String
@@ -76,5 +85,4 @@ switchCmd = do
 textLine :: Parser String            
 textLine = do
              txt <- many $ noneOf ['\\', '\n', '%']
-             optional comment
              return txt
