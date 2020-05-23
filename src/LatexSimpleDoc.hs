@@ -17,7 +17,7 @@ module LatexSimpleDoc (
   )    
     where
         
-import BasicLatex (textLine)
+import BasicLatex (textLine, comment)
 import LatexCmds (docClass, specificBeginCtx, endCtx)
 
 import "parsec" Text.Parsec.String (Parser)
@@ -38,7 +38,6 @@ latexDocCtx = do
                 -- specificBeginCtx pushes ctx into ctxStack as Vec
                 (_optParams, ctxStack) <- specificBeginCtx "document" Vec.empty 
                 P.newline
-                P.spaces
                 txt <- textLine
                 P.newline
                 _ <- endCtx ctxStack   -- pops ctx from ctxStack
@@ -50,6 +49,7 @@ latexSimple = do
                 P.spaces
                 docClass
                 P.newline
+                P.optional comment
                 P.spaces
                 blocks <- latexDocCtx
                 P.optional P.spaces

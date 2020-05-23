@@ -16,8 +16,8 @@ Hello world
 sample2 :: String
 sample2 = [r|
 \documentclass{article}
-
+% this is a comment
 \begin{document}
-Hello world% this is a comment
+Hello world % this is a comment
 \end{document}
 |]

@@ -22,8 +22,4 @@ main = hspec $ do
                   
               it "parses sample2" $ do
                   (runParser latexSimple () "sample2" sample2) `shouldBe` 
-                      (Right $ Pandoc PD.nullMeta [PD.Para [PD.Str "Hello world"]])
-              
-         
-         
-         
+                      (Right $ Pandoc PD.nullMeta [PD.Para [PD.Str "Hello world "]])

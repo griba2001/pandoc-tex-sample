@@ -3,7 +3,8 @@ module BasicLatex (
   cmdWithNoParams,
   switchCmd,    
   comment,
-  textLine,    
+  textLine,
+  inlineSpacing,    
 ) where
 
 import Text.Parsec.String (Parser)
@@ -32,7 +33,6 @@ alnumParam = fmap (intercalate " ") $ sepBy1 (many alphaNum) spaces
 
 comment :: Parser ()
 comment = do
-            inlineSpacing 
             char '%'
             skipMany (satisfy nonNL)
             return ()
