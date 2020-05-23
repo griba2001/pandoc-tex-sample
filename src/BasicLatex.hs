@@ -5,7 +5,7 @@ module BasicLatex (
   eol,
   textLine,
   inlineSpacing,
-  blanksEOL,    
+  eolBlanks,    
 ) where
 
 import Text.Parsec.String (Parser)
@@ -39,15 +39,15 @@ nl = do
 inlineSpacing :: Parser ()
 inlineSpacing = skipMany $ oneOf [' ', '\t']
 
-blanksEOL :: Parser ()
-blanksEOL = do
+eolBlanks :: Parser ()
+eolBlanks = do
               inlineSpacing
               eolComment <|> nl
               return ()
 
 eol :: Parser ()
 eol = do
-         many (eolComment <|> nl <|> blanksEOL)
+         many (eolComment <|> nl <|> eolBlanks)
          return ()
          
 namedParam :: Parser String
