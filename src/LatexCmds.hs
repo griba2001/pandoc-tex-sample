@@ -16,8 +16,8 @@ import BasicLatex (cmdWithParams)
 docClass :: Parser ([String], [String])
 docClass = cmdWithParams "documentclass"
 
-specificBeginCtx :: SNatI n => String -> Vec n String -> Parser ([String], Vec (S n) String)
-specificBeginCtx ctx ctxStack = do
+beginCtx :: SNatI n => String -> Vec n String -> Parser ([String], Vec (S n) String)
+beginCtx ctx ctxStack = do
     
    (optParams, [param]) <- cmdWithParams "begin"
    if param /= ctx 

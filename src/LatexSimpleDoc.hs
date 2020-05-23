@@ -18,7 +18,7 @@ module LatexSimpleDoc (
     where
         
 import BasicLatex (textLine, comment)
-import LatexCmds (docClass, specificBeginCtx, endCtx)
+import LatexCmds (docClass, beginCtx, endCtx)
 
 import "parsec" Text.Parsec.String (Parser)
 import qualified "parsec" Text.Parsec.Char as P
@@ -35,8 +35,8 @@ import qualified Text.Pandoc.Definition as PD
 -- | parses a document context with a line of text
 latexDocCtx :: Parser [PD.Block]
 latexDocCtx = do
-                -- specificBeginCtx pushes ctx into ctxStack as Vec
-                (_optParams, ctxStack) <- specificBeginCtx "document" Vec.empty 
+                -- beginCtx pushes ctx into ctxStack as Vec
+                (_optParams, ctxStack) <- beginCtx "document" Vec.empty 
                 P.newline
                 txt <- textLine
                 P.newline
