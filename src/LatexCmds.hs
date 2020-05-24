@@ -1,6 +1,9 @@
 {-# LANGUAGE PackageImports, DataKinds #-}
 
-module LatexCmds where
+module LatexCmds ( 
+  docClass,
+  withNamedEnv,    
+) where
 
 import Data.Semigroup ((<>))
 
@@ -11,23 +14,33 @@ import qualified "vec" Data.Vec.Pull as Vec
 import "parsec" Text.Parsec.String (Parser)
 import qualified "parsec" Text.Parsec.Prim as P
 
-import BasicLatex (cmdWithParams)
+import BasicLatex (cmdWithParams, eol)
 
 docClass :: Parser ([String], [String])
 docClass = cmdWithParams "documentclass"
 
-beginCtx :: SNatI n => String -> Vec n String -> Parser ([String], Vec (S n) String)
-beginCtx ctx ctxStack = do
+beginEnv :: SNatI n => String -> Vec n String -> Parser ([String], Vec (S n) String)
+beginEnv env envStack = do
     
    (optParams, [param]) <- cmdWithParams "begin"
-   if param /= ctx 
-     then P.parserFail $ "begin err. expected " <> ctx <> " found " <> param
-     else return (optParams, ctx `Vec.cons` ctxStack)
+   if param /= env 
+     then P.parserFail $ "begin err. expected " <> env <> " found " <> param
+     else return (optParams, env `Vec.cons` envStack)
 
-endCtx :: SNatI n => Vec (S n) String -> Parser (Vec n String)
-endCtx ctxStack = do
+endEnv :: SNatI n => Vec (S n) String -> Parser (Vec n String)
+endEnv envStack = do
     
    (_, [param]) <- cmdWithParams "end"
-   if param /= Vec.head ctxStack
+   if param /= Vec.head envStack
      then P.parserFail "closing err."
-     else return $ Vec.tail ctxStack
+     else return $ Vec.tail envStack
+     
+
+withNamedEnv :: SNatI n => String -> Vec n String -> (Vec (S n) String -> [String] -> Parser a) -> Parser a     
+withNamedEnv env envStack envParser = do
+    (optParams, envStack') <- beginEnv env envStack
+    eol
+    result <- envParser envStack' optParams
+    eol
+    _ <- endEnv envStack'
+    return result
