@@ -1,10 +1,12 @@
+(* This are EBNF grammar productions *)
+
 eol = { eolComment nl | nl }
 
-latexSimple ::= cmdDocClass eol envDocument [nl]
+latexSimple = cmdDocClass eol envDocument [nl]
 
-envDocument ::= cmdBeginDoc eol docContent eol cmdEndDoc
+envDocument = cmdBeginDoc eol docContent eol cmdEndDoc
 
-docContent ::= text
+docContent = text
 
 
                
