@@ -2,18 +2,18 @@
 
 eol = { nl | comment nl | blanks comment nl }
 
-latexSimple = cmdDocClass eol envDocument [nl]
+latexSimple = cmdDocClass eol envDocument
 
-envDocument = cmdBeginEnv("document") eol docContent cmdEndEnv("document") [eol]
+envDocument = cmdBeginEnv("document") docContent cmdEndEnv("document")
 
-cmdBeginEnv(environment) = "\begin{environment}"
-cmdEndEnv(environment) = "\end{environment}"
+cmdBeginEnv(environment) = "\begin{environment}" eol
+cmdEndEnv(environment) = "\end{environment}" [eol]
 
-docContent = text | envItemize
+docContent = {text | envItemize}
 
 (* Bullet list *)
 
-envItemize = cmdBeginEnv("itemize") eol itemizeContent cmdEndEnv("itemize") [eol]
+envItemize = cmdBeginEnv("itemize") itemizeContent cmdEndEnv("itemize")
 
 itemizeContent = item { eol item } eol
 
