@@ -29,7 +29,7 @@ escapedOpenSqBracket = "{[}"
 
 text = firstChar {textChar}
 
-textChar = [^\\%\n]
+textChar = regexp [^\\%\n]
 
 firstChar = escapedOpenSqBracket | textChar
 
