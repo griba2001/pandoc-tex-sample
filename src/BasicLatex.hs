@@ -1,19 +1,17 @@
 module BasicLatex (
   cmdWithParams,
-  cmdWithNoParams,
-  switchCmd,    
   eol,
-  textLine,
+  text,
   inlineSpacing,
   eolBlanks,    
 ) where
 
 import Text.Parsec.String (Parser)
 import Text.Parsec.Char (char, oneOf, noneOf, spaces, string, letter, alphaNum, newline, satisfy)
-import Text.Parsec.Combinator (many1, sepBy1, option, optional)
-import Text.Parsec.Prim (many, skipMany, (<?>), (<|>))
+import Text.Parsec.Combinator (many1, sepBy1, option, optional, optionMaybe)
+import Text.Parsec.Prim (many, skipMany, (<?>), (<|>), try)
 
-import Data.List (intercalate)
+import Data.Either (lefts, rights)
 
 comma = char ',' :: Parser Char
 
@@ -31,9 +29,7 @@ eolComment = do
             return ()
             
 nl :: Parser ()
-nl = do
-        newline
-        return ()
+nl = newline >> return ()
 
 
 inlineSpacing :: Parser ()
@@ -47,50 +43,60 @@ eolBlanks = do
 
 eol :: Parser ()
 eol = do
-         many (eolComment <|> nl <|> eolBlanks)
+         many (nl <|> eolComment <|> try eolBlanks)
          return ()
          
 namedParam :: Parser String
 namedParam = many letter
 
-alnumParam :: Parser String
-alnumParam = fmap (intercalate " ") $ sepBy1 (many alphaNum) spaces 
 
-mandatParams :: Parser [String]
-mandatParams = do
+-- LA(2) use with `try`
+escapedClosingSqBracket :: Parser Char
+escapedClosingSqBracket = do
+            let ch = ']'
+            char '{'
+            char ch
+            char '}'
+            return ch
+
+-- LA(2) use with `try`
+escapedOpenSqBracket :: Parser Char
+escapedOpenSqBracket = do
+            let ch = '['
+            char '{'
+            char ch
+            char '}'
+            return ch
+
+type EitherOptMandat = Either String String
+
+-- LA(2) must avoid escapedOpenSqBracket, use with `try`
+mandatParam :: Parser EitherOptMandat
+mandatParam = do
                char '{'
-               strs <- sepBy1 namedParam comma <?> "missing {param}"
+               ch <- noneOf ['}', '[']  -- forbidden '['
+               rest <- many $ noneOf ['}']
                char '}'
-               return strs
+               return $ Right (ch : rest)
 
-optParams :: Parser [String]
-optParams = do
+optParam :: Parser EitherOptMandat
+optParam = do
             char '[' 
-            strs <- sepBy1 alnumParam comma <?> "missing [param]"
+            str <- many (try escapedClosingSqBracket <|> noneOf [']'])
             char ']' 
-            return strs
-              
+            return $ Left str
+            
 cmdWithParams :: String -> Parser ([String], [String])           
 cmdWithParams cmd = do
-            bkslash
-            string cmd
-            optPs <- option [] optParams
-            params <- mandatParams <?> "missing mandatory {param}"
-            return (optPs, params)
+            try (bkslash >> string cmd) -- revert bkslash if it fails
+            -- optional params may come before or after mandatory ones
+            params <- many (try mandatParam <|> optParam)
+            return (lefts params {- opts -}, rights params {- mandats -})
 
-cmdWithNoParams :: String -> Parser ()           
-cmdWithNoParams cmd = do
-            bkslash
-            string cmd
-            return ()
-
-switchCmd :: Parser String
-switchCmd = do
-            bkslash
-            cmd <- many1 letter
-            return cmd
-
-textLine :: Parser String            
-textLine = do
-             txt <- many $ noneOf ['\\', '\n', '%']
-             return txt
+-- | first ch after cmd maybe an escapedOpenSqBracket           
+text :: Parser String            
+text = do
+             let excepted = ['\\', '\n', '%'] 
+             ch <- try escapedOpenSqBracket <|> noneOf excepted  
+             txt <- many $ noneOf excepted
+             return $ ch : txt

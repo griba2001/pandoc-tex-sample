@@ -1,12 +1,38 @@
-(* This are EBNF grammar productions *)
+(* This are EBNF grammar productions with extra parameters *)
 
-eol = { eolComment nl | nl }
+eol = { nl | comment nl | blanks comment nl }
 
 latexSimple = cmdDocClass eol envDocument [nl]
 
-envDocument = cmdBeginDoc eol docContent eol cmdEndDoc
+envDocument = cmdBeginEnv("document") eol docContent cmdEndEnv("document") [eol]
 
-docContent = text
+cmdBeginEnv(environment) = "\begin{environment}"
+cmdEndEnv(environment) = "\end{environment}"
+
+docContent = text | envItemize
+
+(* Bullet list *)
+
+envItemize = cmdBeginEnv("itemize") eol itemizeContent cmdEndEnv("itemize") [eol]
+
+itemizeContent = item { eol item } eol
+
+item = cmdItem text
+
+cmdItem = "\item" [optParam]
+
+optParam = "[" {[^]] | escapedClosingSqBracket} "]"
+mandatParam = "{" {[^}]} "}"
+
+escapedClosingSqBracket = "{]}"
+escapedOpenSqBracket = "{[}"
+
+text = firstChar {textChar}
+
+textChar = [^\%\n]
+
+firstChar = escapedOpenSqBracket | textChar
+
 
 
                
