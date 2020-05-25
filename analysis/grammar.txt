@@ -7,9 +7,22 @@ latexSimple = cmdDocClass eol envDocument
 envDocument = cmdBeginEnv("document") docContent cmdEndEnv("document")
 
 cmdBeginEnv(environment) = "\begin{environment}" eol
+
 cmdEndEnv(environment) = "\end{environment}" [eol]
 
 docContent = {text | envItemize}
+
+optParam = "[" {nonClosingSqBrkt | escapedClosingSqBracket} "]"
+
+mandatParam = "{" {nonClosingCurlyBrkt} "}"
+
+escapedClosingSqBracket = "{]}"
+
+escapedOpenSqBracket = "{[}"
+
+text = firstChar {textChar}
+
+firstChar = escapedOpenSqBracket | textChar
 
 (* Bullet list *)
 
@@ -21,18 +34,10 @@ item = cmdItem text
 
 cmdItem = "\item" [optParam]
 
-optParam = "[" {regexp [^]] | escapedClosingSqBracket} "]"
-mandatParam = "{" {regexp [^}]} "}"
 
-escapedClosingSqBracket = "{]}"
-escapedOpenSqBracket = "{[}"
+(* Character classes as Regexp patterns *)
 
-text = firstChar {textChar}
-
-textChar = regexp [^\\%\n]
-
-firstChar = escapedOpenSqBracket | textChar
-
-
-
+textChar = [^\\%\n]
+nonClosingSqBrkt = [^\]]
+nonClosingCurlyBrkt = [^}]
                
