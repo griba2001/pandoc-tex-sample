@@ -1,4 +1,4 @@
-(* This are EBNF grammar productions with extra parameters *)
+(* This are EBNF grammar productions with extra parameters and regular expressions *)
 
 eol = { nl | comment nl | blanks comment nl }
 
@@ -21,8 +21,8 @@ item = cmdItem text
 
 cmdItem = "\item" [optParam]
 
-optParam = "[" {[^]] | escapedClosingSqBracket} "]"
-mandatParam = "{" {[^}]} "}"
+optParam = "[" {regexp [^]] | escapedClosingSqBracket} "]"
+mandatParam = "{" {regexp [^}]} "}"
 
 escapedClosingSqBracket = "{]}"
 escapedOpenSqBracket = "{[}"
